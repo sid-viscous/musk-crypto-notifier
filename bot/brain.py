@@ -1,14 +1,15 @@
 import json
+import os
 from fuzzysearch import find_near_matches
+from config import config, tweet_logger, possible_tweet_logger, logger
 
-with open("keywords.json") as file:
-    nlp_keywords = json.load(file)
+
 
 
 class TweetHandler:
     def __init__(self):
-        self.keywords = nlp_keywords['keywords']
-        self.possible_keywords = nlp_keywords['possible_keywords']
+        self.keywords = config["keywords"]
+        self.possible_keywords = config["possible_keywords"]
 
     def _remove_duplicates(self, matches):
         """ Removes matches which are duplicated.
@@ -28,8 +29,15 @@ class TweetHandler:
             for match_2 in matches:
                 if match_1.start == match_2.start and match_1 != match_2:
                     # 2 keywords start at the same position, find the shortest word and remove the match
-                    print("These two keywords start at the same position: {} || {}".format(match_1, match_2))
+                    logger.debug("These two keywords start at the same position: {} || {}".format(match_1, match_2))
                     if match_2.end >= match_1.end:
+                        matches.remove(match_1)
+                    else:
+                        matches.remove(match_2)
+                if match_1.end == match_2.end and match_1 != match_2:
+                    # 2 keywords end at the same position, find the shortest word and remove the match
+                    logger.debug("These two keywords start at the end position: {} || {}".format(match_1, match_2))
+                    if match_2.start <= match_1.start:
                         matches.remove(match_1)
                     else:
                         matches.remove(match_2)
@@ -49,7 +57,7 @@ class TweetHandler:
     def scan_for_possible_keywords(self, text):
         return self._scan_text(self.possible_keywords, text)
 
-    def highlight_keywords(self, text, matches):
+    def highlight_keywords(self, text, matches, bold=True, underline=True):
         """ Adds Discord compatible text highlighting.
 
         Args:
@@ -61,8 +69,15 @@ class TweetHandler:
 
         """
 
-        start_block = "__**"
-        end_block = "**__"
+        if bold:
+            start_block = "**"
+            end_block = "**"
+        else:
+            start_block = ""
+            end_block = ""
+        if underline:
+            start_block = "__" + start_block
+            end_block = end_block + "__"
 
         for match in matches:
             # Get position of substring
@@ -76,23 +91,31 @@ class TweetHandler:
         return text
 
     def process_tweet(self, tweet):
-        text = tweet["text"].lower()
+        text = tweet.text.lower()
 
         # Get the keywords from the tweet text
         matched_keywords = self.scan_for_keywords(text)
         matched_possible_keywords = self.scan_for_possible_keywords(text)
 
-        # Highlight the tweet text
-        highlighted_text = self.highlight_keywords(text, matched_keywords)
+        if matched_keywords:
+            # Highlight the tweet text
+            highlighted_text = self.highlight_keywords(text, matched_keywords)
+            if matched_possible_keywords:
+                highlighted_text = self.highlight_keywords(highlighted_text, matched_possible_keywords, bold=False)
 
+            # Log tweet text
+            tweet_logger.info(highlighted_text)
 
-        for matched_keyword in matched_keywords:
-            pass
+        elif matched_possible_keywords:
+            # Highlight the tweet text
+            highlighted_text = self.highlight_keywords(text, matched_possible_keywords, bold=False)
 
-        for matched_possible_keyword in matched_possible_keywords:
-            pass
+            # Log tweet text
+            possible_tweet_logger.info(highlighted_text)
 
-        return highlighted_text
+        else:
+            logger.info("Not a crypto related tweet")
+
 
 
 

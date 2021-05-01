@@ -5,7 +5,9 @@ texts = [
     "I am a tweet containing a BITCOin reference",
     "I refer to etherium",
     "I like CRYptocurrency",
-    "I like doge, especially crypto, but not bitcoin"
+    "I like doge, especially crypto, but not bitcoin",
+    "I wish to take my dog to the moon today",
+    "This tweet contains possible references, i.e. the moon and definite reference, i.e. bitcoin and doge"
     ]
 
 tweets = []
