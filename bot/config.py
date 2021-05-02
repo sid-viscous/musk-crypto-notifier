@@ -27,7 +27,7 @@ config = {
     "twitter_access_token_secret": os.getenv("TWITTER_ACCESS_TOKEN_SECRET"),
     "logs_webhook_url": os.getenv("DISCORD_LOGS_WEBHOOK_URL", default=""),
     "tweets_webhook_url": os.getenv("DISCORD_TWEETS_WEBHOOK_URL", default=""),
-    "possible_tweets_webhook_url": os.getenv("DISCORD_LOGS_WEBHOOK_URL", default="")
+    "possible_tweets_webhook_url": os.getenv("DISCORD_POSSIBLE_TWEETS_WEBHOOK_URL", default="")
 }
 
 

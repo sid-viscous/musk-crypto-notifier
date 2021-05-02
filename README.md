@@ -135,6 +135,10 @@ The section `possible_keywords` is for references which _might_ relate to crypto
 
 * The system searches for keyword matches based on what we give it. For some cases, our keyword may be a part of another word. For example the short name for Etherium `ETH` is likely to show up in commonly used words such as `TEETH`, `DICHLOROMETHANE` and `PLETHYSMOGRAMS`. For this reason, keywords with such common matches are currently excluded. 
 
+* The Python code exits when receiving an error from the Twitter API, however this is saved by Docker, which automatically restarts the service on exit. Ideally, the Python code should be able to handle these errors itself without relying on Docker.
+
+
+
 ## Risks
 
 It is not possible to predict precisely what keywords can trigger changes in the market.
@@ -142,6 +146,8 @@ It is not possible to predict precisely what keywords can trigger changes in the
 The current keyword list is pretty much just my best guess for words which may influence the market. I very much welcome ideas for new keywords to include.
 
 There is also a risk of false positive results, this is why the separate keyword list `possible_keywords` is used.
+
+Currently, this service is running on a local physical server. If the power/internet goes out while a crypto tweet comes in the system will miss it. If this service is popular enough I might move it to a cloud server.
 
 ## Disclaimer
 

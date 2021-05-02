@@ -134,6 +134,21 @@ class TweetHandler:
             text = text[:start] + start_block + text[start:]
         return text
 
+    def build_tweet_url(self, tweet):
+        """ Builds a link to the original tweet.
+
+        Args:
+            tweet: Instance of tweet object.
+
+        Returns:
+            str: A string containing the URL of the original tweet.
+
+        """
+        return f"http://twitter.com/{tweet.user.screen_name}/status/{tweet.id_str}"
+
+    def message_formatter(self, intro, text, tweet):
+        return f"{intro} crypto related tweet from {tweet.user.screen_name}:\n \t{text}\n {self.build_tweet_url(tweet)}"
+
     def process_tweet(self, tweet):
         text = tweet.text.lower()
 
@@ -148,14 +163,14 @@ class TweetHandler:
                 highlighted_text = self.highlight_keywords(highlighted_text, matched_possible_keywords, bold=False)
 
             # Log tweet text
-            tweet_logger.info(highlighted_text)
+            tweet_logger.info(self.message_formatter("Matched", highlighted_text, tweet))
 
         elif matched_possible_keywords:
             # Highlight the tweet text
             highlighted_text = self.highlight_keywords(text, matched_possible_keywords, bold=False)
 
             # Log tweet text
-            possible_tweet_logger.info(highlighted_text)
+            possible_tweet_logger.info(self.message_formatter("Possible", highlighted_text, tweet))
 
         else:
-            logger.info("Not a crypto related tweet")
+            logger.info(self.message_formatter("Not a", text, tweet))

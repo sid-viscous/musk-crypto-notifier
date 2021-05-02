@@ -3,7 +3,7 @@ import os
 import logging
 from discord_handler import DiscordHandler
 
-LOG_FORMAT = logging.Formatter("%(asctime)s - %(name)-6s - %(levelname)-7s - %(message)s")
+LOG_FORMAT = logging.Formatter("%(name)-6s - %(levelname)-7s - %(message)s")
 TWEET_FORMAT = logging.Formatter("%(message)s")
 
 
