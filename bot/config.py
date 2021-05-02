@@ -66,6 +66,8 @@ def twitter_api():
         logger.error("Error creating API")
         raise e
     logger.info("API created")
+    for following_id in config["following_ids"]:
+        logger.info(f"Following user with id {following_id}")
     return api
 
 
