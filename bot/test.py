@@ -1,3 +1,5 @@
+""" Test script for running text analysis in offline mode """
+
 import json
 from brain import TweetHandler
 

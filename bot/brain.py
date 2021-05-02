@@ -1,3 +1,13 @@
+""" The brains of the operation.
+
+This is where all the clever stuff happens:
+
+    * Searching of keywords and possible keywords in text.
+    * Highlighting keywords (using Discord markdown syntax).
+    * Removing duplicate matches
+
+"""
+
 import json
 import os
 from fuzzysearch import find_near_matches
@@ -7,6 +17,14 @@ from config import config, tweet_logger, possible_tweet_logger, logger
 
 
 class TweetHandler:
+    """ Tweet handler.
+
+    This class manages processing of tweets.
+
+    Attributes:
+        keywords (list of str): List of definite crypto keywords
+        possible (list of str): List of possible crypto keywords
+    """
     def __init__(self):
         self.keywords = config["keywords"]
         self.possible_keywords = config["possible_keywords"]
@@ -44,6 +62,15 @@ class TweetHandler:
         return matches
 
     def _scan_text(self, keywords, text):
+        """ Scans and finds keyword matches in text.
+
+        Args:
+            keywords (list of str): List of keywords to search for in the text
+            text (str): Tweet text
+
+        Returns:
+            list of str: List of keywords found in the text.
+        """
         matches = []
         for keyword in keywords:
             test = find_near_matches(keyword, text, max_l_dist=0)
@@ -52,21 +79,38 @@ class TweetHandler:
         return self._remove_duplicates(matches)
 
     def scan_for_keywords(self, text):
+        """ Scans for keywords in the text,
+
+        Args:
+            text (str): Tweet text.
+
+        Returns:
+            list of str: List of keywords found in the text.
+        """
         return self._scan_text(self.keywords, text)
 
     def scan_for_possible_keywords(self, text):
+        """ Scans for possible keywords in the text,
+
+        Args:
+            text (str): Tweet text.
+
+        Returns:
+            list of str: List of possible keywords found in the text.
+        """
         return self._scan_text(self.possible_keywords, text)
 
     def highlight_keywords(self, text, matches, bold=True, underline=True):
         """ Adds Discord compatible text highlighting.
 
         Args:
-            text: String of the original tweet text in lower case.
-            matches: List of keyword Matches .
+            text (str): String of the original tweet text in lower case.
+            matches (list of str): List of keyword Matches.
+            bold (bool): Boolean to set keywords bold.
+            underline (bool): Boolean to set keywords underlined.
 
         Returns:
-            A block of text containing Discord highlighting for the matched keywords.
-
+            str: A block of text containing Discord highlighting for the matched keywords.
         """
 
         if bold:
@@ -85,7 +129,7 @@ class TweetHandler:
             end = start + len(match.matched)
 
             # Add the blocks to the string, starting with the end block
-            # It is important to start with the end block to avoid changing the position of the end of the string
+            # It is important to begin with the end block to avoid changing the position of the end of the string
             text = text[:end] + end_block + text[end:]
             text = text[:start] + start_block + text[start:]
         return text
@@ -115,10 +159,3 @@ class TweetHandler:
 
         else:
             logger.info("Not a crypto related tweet")
-
-
-
-
-
-
-

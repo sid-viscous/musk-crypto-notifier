@@ -8,9 +8,23 @@ TWEET_FORMAT = logging.Formatter("%(message)s")
 
 
 class Logger:
+    """ Logging system for twitter notifier.
+
+    Includes handlers for Discord.
+
+    Attributes:
+        logger: Instance of python logging system.
+    """
 
     def __init__(self, logging_agent, logs_webhook_url=None, tweets_webhook_url=None, offline_mode=True):
-        self.test_mode = os.getenv("TEST_MODE", default=True)
+        """ Initialises an instance of the Logger class.
+
+        Args:
+            logging_agent (str): A name for the logger, used to identify multiple log streams.
+            logs_webhook_url (str): Discord webhook URL for logs channel.
+            tweets_webhook_url (str): Discord webhook URL for tweets.
+            offline_mode (bool): Offline mode = True skips logging to Discord.
+        """
 
         # Initialise logger
         self.logger = logging.getLogger(logging_agent)
@@ -37,7 +51,16 @@ class Logger:
                 discord_tweet_handler.setFormatter(tweet_format)
                 self.logger.addHandler(discord_tweet_handler)
 
-    def log(self, message, level="info"):
+    def _log(self, message, level="info"):
+        """ Log selector.
+
+        Args:
+            message (str): A string containing the message to be logged.
+            level (str): Log level either info, warning, error, or debug
+
+        Returns:
+
+        """
         if level == "info":
             self.logger.info(message)
         elif level == "warning":
@@ -48,13 +71,33 @@ class Logger:
             self.logger.debug(message)
 
     def info(self, message):
-        self.log(message, "info")
+        """ Info logger.
+
+        Args:
+            message (str): String containing the message text.
+        """
+        self._log(message, "info")
 
     def warning(self, message):
-        self.log(message, "warning")
+        """ Warning warning.
+
+        Args:
+            message (str): String containing the message text.
+        """
+        self._log(message, "warning")
 
     def error(self, message):
-        self.log(message, "error")
+        """ Error logger.
+
+        Args:
+            message (str): String containing the message text.
+        """
+        self._log(message, "error")
 
     def debug(self, message):
-        self.log(message, "debug")
+        """ Debug logger.
+
+        Args:
+            message (str): String containing the message text.
+        """
+        self._log(message, "debug")
