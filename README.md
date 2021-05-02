@@ -109,13 +109,31 @@ Discord webhook URLs can be set up for each channel in `Settings -> Integrations
 |-----|-------------|
 | `OFFLINE_MODE` | Disables access to Twitter and Discord, defaults to `True` so `test.py` can run quick tests without connecting to anything. For running this service, this variable should be set to `False`.
 
+#### Running the service
+
+To build and run the image using Docker, use the following command from the same directory as `docker-compose.yml`.
+
+```shell
+docker-compose up --build
+```
+
+Or to run it in detached mode (without console logging):
+
+```shell
+docker-compose up --build -d
+```
+
 ### Keywords
 
 The list of keywords analysed can be found in `bot/keywords.json`. The dictionary is split into two sections.
 
 The first section `keywords` is for references that we are certain relate to cryptocurrency.
 
-The section section `possible_keywords` is for references which _might_ relate to cryptocurrency.
+The section `possible_keywords` is for references which _might_ relate to cryptocurrency.
+
+## Known Issues
+
+* The system searches for keyword matches based on what we give it. For some cases, our keyword may be a part of another word. For example the short name for Etherium `ETH` is likely to show up in commonly used words such as `TEETH`, `DICHLOROMETHANE` and `PLETHYSMOGRAMS`. For this reason, keywords with such common matches are currently excluded. 
 
 ## Risks
 

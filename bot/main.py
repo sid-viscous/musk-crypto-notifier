@@ -43,6 +43,7 @@ class CryptoTweetListener(tweepy.StreamListener):
         # To ensure, we only get tweets directly from the following account, apply an extra filter here
         if str(tweet.user.id) in config["following_ids"]:
             logger.info(f"Processing tweet id {tweet.id} from {tweet.user.screen_name}")
+            logger.info(f"Tweet text: {tweet.text}")
             self.tweet_handler.process_tweet(tweet)
 
     def on_error(self, status):
