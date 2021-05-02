@@ -34,7 +34,7 @@ I plan to also include image analysis, to extract text from image attachments us
 
 It would also be useful to follow other prominent players in crypto, both for signals of positive and negative impacts.
 
-For example, it might be useful to follow government accounts for news of crypto restrictons, taxes etc.
+For example, it might be useful to follow government accounts for news of crypto restrictions, taxes etc.
 
 ## Support this project
 
