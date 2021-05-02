@@ -5,7 +5,7 @@ Uses web sockets.
 Initiates the Twitter listener, triggering the analysis methods when tweets are received.
 
 """
-
+import time
 import tweepy
 
 from config import config, logger, twitter_api
@@ -56,7 +56,12 @@ class CryptoTweetListener(tweepy.StreamListener):
             bool: True to keep the service running after error received.
 
         """
-        logger.error(status)
+        if str(status) == "420":
+            logger.warning("Twitter AI Rate Limit Exceeded, Sleep for 1 minute")
+            time.sleep(1 * 60)
+        else:
+            logger.error(status)
+
         return True
 
 
