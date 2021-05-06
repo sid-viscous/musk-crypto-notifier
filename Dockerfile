@@ -1,12 +1,15 @@
-FROM python:3.9-alpine
+FROM python:3.9
 
-RUN apk --update add git
+#RUN apk --update add git g++
+RUN apt-get install git
 
 COPY requirements.txt /app/requirements.txt
 
 WORKDIR /app
 
-RUN pip3 install -r requirements.txt
+RUN pip install --upgrade pip
+RUN python -m pip install --upgrade setuptools
+RUN pip install -r requirements.txt
 RUN python -m pip install git+https://github.com/sid-viscous/DiscordHandler
 
 COPY . /app

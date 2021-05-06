@@ -6,3 +6,6 @@ services:
     env_file:
       - ".env"
     restart: "always"
+    volumes:
+      - "./google_client_secrets.json:/google_client_secrets.json"
+      - "./bot:/app/bot"

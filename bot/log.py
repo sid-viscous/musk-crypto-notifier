@@ -39,7 +39,7 @@ class Logger:
         if not offline_mode:
             # Define discord handler and add to logger
             discord_log_handler = DiscordHandler(logs_webhook_url, emit_as_code_block=False)
-            discord_log_handler.setLevel(logging.DEBUG)
+            discord_log_handler.setLevel(logging.INFO)
             discord_log_handler.setFormatter(LOG_FORMAT)
             self.logger.addHandler(discord_log_handler)
 
