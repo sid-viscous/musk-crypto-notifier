@@ -11,7 +11,9 @@ This is where all the clever stuff happens:
 import json
 import os
 from fuzzysearch import find_near_matches
-from config import config, tweet_logger, possible_tweet_logger, logger
+from google.cloud import vision
+from config import config, tweet_logger, possible_tweet_logger, image_client, logger
+
 
 
 
@@ -28,6 +30,7 @@ class TweetHandler:
     def __init__(self):
         self.keywords = config["keywords"]
         self.possible_keywords = config["possible_keywords"]
+        self.possible_objects = config["possible_objects"]
 
     def _remove_duplicates(self, matches):
         """ Removes matches which are duplicated.
@@ -73,7 +76,11 @@ class TweetHandler:
         """
         matches = []
         for keyword in keywords:
-            test = find_near_matches(keyword, text, max_l_dist=0)
+            if len(keyword) > 4:
+                max_l_dist = 1
+            else:
+                max_l_dist = 0
+            test = find_near_matches(keyword, text, max_l_dist=max_l_dist)
             if test:
                 matches.append(test[0])
         return self._remove_duplicates(matches)
@@ -90,7 +97,7 @@ class TweetHandler:
         return self._scan_text(self.keywords, text)
 
     def scan_for_possible_keywords(self, text):
-        """ Scans for possible keywords in the text,
+        """ Scans for possible keywords in the text.
 
         Args:
             text (str): Tweet text.
@@ -99,6 +106,17 @@ class TweetHandler:
             list of str: List of possible keywords found in the text.
         """
         return self._scan_text(self.possible_keywords, text)
+
+    def scan_for_possible_image_objects(self, text):
+        """ Scans for possible objects in the image.
+
+        Args:
+            text (str): Space delimited list of objects found in the image.
+
+        Returns:
+            list of str: List of possible objects found in the image..
+        """
+        return self._scan_text(self.possible_objects, text)
 
     def highlight_keywords(self, text, matches, bold=True, underline=True):
         """ Adds Discord compatible text highlighting.
@@ -147,15 +165,78 @@ class TweetHandler:
         return f"http://twitter.com/{tweet.user.screen_name}/status/{tweet.id_str}"
 
     def message_formatter(self, intro, text, tweet):
+        """ Sends results in standardised format.
+
+        Args:
+            intro (str): Intro text, e.g. "Possible", "Not a".
+            text (str): Tweet text.
+            tweet (tweet): Tweet object.
+
+        Returns:
+            str: A formatted string ready for logging.
+
+        """
         return f"{intro} crypto related tweet from {tweet.user.screen_name}:\n \t{text}\n {self.build_tweet_url(tweet)}"
 
-    def process_tweet(self, tweet):
-        text = tweet.text.lower()
+    def scan_image_text(self, image_url):
+        """ Gets text from image.
 
-        # Get the keywords from the tweet text
-        matched_keywords = self.scan_for_keywords(text)
-        matched_possible_keywords = self.scan_for_possible_keywords(text)
+        Uses Google Vision API to extract text from image.
 
+        Args:
+            image_url (str): Url for the image.
+
+        Returns:
+            str: A space delimited list of words in the image.
+
+        """
+        image = vision.Image()
+        image.source.image_uri = image_url
+
+        logger.info("Identifying text in image")
+        response = image_client.text_detection(image=image)
+
+        result = ""
+        for text in response.text_annotations:
+            temp = text.description.replace('\n', ' ').replace('\r', '')
+            result = " ".join([result, temp])
+
+        return result.lower()
+
+    def scan_image_objects(self, image_url):
+        """ Extracts objects from image.
+
+        Uses Google Vision API to extract objects from the image, e.g. "car", "dog"
+
+        Args:
+            image_url (str): URL of the image.
+
+        Returns:
+            str: A space delimited string of objects found in the image.
+        """
+        image = vision.Image()
+        image.source.image_uri = image_url
+        response = image_client.label_detection(image=image)
+        logger.info("Identifying objects in image:")
+
+        result = ""
+        for label in response.label_annotations:
+            result = " ".join([result, label.description])
+
+        return result.lower()
+
+    def handle_keywords(self, tweet, text, matched_keywords, matched_possible_keywords):
+        """ Checks if results exist for keywords and prints them.
+
+        Logs are sent to the log handler.
+
+        Args:
+            tweet (tweet): Tweet object.
+            text (str): Text where results were found, could be tweet text or image words.
+            matched_keywords (list of str): List of matched crypto related keywords.
+            matched_possible_keywords (list of str): List of possible matched crypto related keywords.
+
+        """
         if matched_keywords:
             # Highlight the tweet text
             highlighted_text = self.highlight_keywords(text, matched_keywords)
@@ -172,5 +253,58 @@ class TweetHandler:
             # Log tweet text
             possible_tweet_logger.info(self.message_formatter("Possible", highlighted_text, tweet))
 
-        else:
-            logger.info(self.message_formatter("Not a", text, tweet))
+    def handle_objects(self, tweet, image_objects, matched_possible_image_objects):
+        """ Checks if results exist for objects and prints them.
+
+        Logs are sent to the log handler.
+
+        Args:
+            tweet (tweet): Tweet object.
+            image_objects (str): Space delimited string containing objects found in the image.
+            matched_possible_image_objects (list of str): List of possible matched objects found in the image.
+
+        """
+        if matched_possible_image_objects:
+            # Highlight the objects
+            highlighted_objects = self.highlight_keywords(image_objects, matched_possible_image_objects, bold=False)
+
+            # Log list of objects
+            possible_tweet_logger.info(self.message_formatter("Possible", f"Matched objects: {highlighted_objects}", tweet))
+
+    def process_tweet(self, tweet):
+        """ Main handler for tweets.
+
+        Searches for keywords in the text and image.
+
+        Also searches for objects, e.g. "dog", "animal".
+
+        Uses Google Vision API for image analysis.
+
+        Args:
+            tweet (tweet): Tweet object
+
+        """
+        text = tweet.text.lower()
+
+        # Get the keywords from the tweet text
+        matched_keywords = self.scan_for_keywords(text)
+        matched_possible_keywords = self.scan_for_possible_keywords(text)
+
+        self.handle_keywords(tweet, text, matched_keywords, matched_possible_keywords)
+
+        # Check if tweet contains an image
+        for media in tweet.entities['media']:
+            if media['type'] == "photo":
+                logger.debug("Found image in tweet, sending to Google API for analysis")
+                image_url = media["media_url_https"]
+                logger.debug(image_url)
+                image_text = self.scan_image_text(image_url)
+                logger.info(f"Text in image: {image_text}")
+                image_objects = self.scan_image_objects(image_url)
+                logger.info(f"Objects in image: {image_objects}")
+                matched_image_keywords = self.scan_for_keywords(image_text)
+                matched_possible_image_keywords = self.scan_for_possible_keywords(image_text)
+                matched_possible_image_objects = self.scan_for_possible_image_objects(image_objects)
+
+                self.handle_keywords(tweet, image_text, matched_image_keywords, matched_possible_image_keywords)
+                self.handle_objects(tweet, image_objects, matched_possible_image_objects)

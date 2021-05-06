@@ -12,6 +12,7 @@ The API client and logging services are also set up here.
 import tweepy
 import json
 import os
+from google.cloud import vision
 
 from log import Logger
 
@@ -40,6 +41,7 @@ with open(os.path.join(os.getcwd(), "keywords.json")) as file:
 
 config["keywords"] = nlp_keywords["keywords"]
 config["possible_keywords"] = nlp_keywords["possible_keywords"]
+config["possible_objects"] = nlp_keywords["possible_objects"]
 
 
 # =====================================================================
@@ -70,6 +72,10 @@ def twitter_api():
         logger.info(f"Following user with id {following_id}")
     return api
 
+# =====================================================================
+# GOOGLE VISION API
+# =====================================================================
+image_client = vision.ImageAnnotatorClient()
 
 # =====================================================================
 # LOGGING
