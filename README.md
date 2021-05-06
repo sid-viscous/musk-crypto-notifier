@@ -28,11 +28,15 @@ The second thread contains possible references to cryptocurrency, words which ma
 
 The system is case-insensitive, so as far as it is concerned, `DOGE` is interpreted the same as `doge` and `DoGe`.
 
+For tweets which contain images, analysis is outsourced to Google Vision API
+
+Text within the image can be analysed using the same keywords list.
+
+Features identified by Google Vision API can also be watched for. For example, we might want to look out for pictures of dogs.
+
 ## Future work
 
-I plan to also include image analysis, to extract text from image attachments using OCR.
-
-It would also be useful to follow other prominent players in crypto, both for signals of positive and negative impacts.
+It would be useful to follow other prominent players in crypto, both for signals of positive and negative impacts.
 
 For example, it might be useful to follow government accounts for news of crypto restrictions, taxes etc.
 
@@ -58,6 +62,7 @@ I would also be keen to get some other ideas for keywords to include in the syst
 * Docker
 * Twitter developer account ([apply for one here](https://developer.twitter.com/en/apply-for-access))
 * A Discord server with channels for `logs`, `tweets`, and `possible tweets`
+* Access to Google Vision API (which requires a billing enabled account)
 
 ### Environment variables
 
@@ -88,6 +93,16 @@ In the [Twitter developer portal](https://developer.twitter.com/en/portal/projec
 | `TWITTER_ACCESS_TOKEN` | Twitter API access token |
 | `TWITTER_ACCESS_TOKEN_SECRET` | Secret key for Twitter API access token |
 | `TWITTER_USER_IDS_TO_FOLLOW` | Space delimited list of user ids to watch (see [here](https://www.codeofaninja.com/tools/find-twitter-id/) for how to get twitter ids from user name)
+
+#### Google configuration
+
+Set up an account and register for [Cloud Vision API](https://cloud.google.com/vision/) access and set up a service account. Download the client_secrets json file.
+
+For more details on how to set this up, follow [this guide](https://codelabs.developers.google.com/codelabs/cloud-vision-api-python/#0).
+
+Place the file and name it to `google_client_secrets.json` in the same directory as the `docker-compose.yml` file.
+
+Leave the environment varibale `GOOGLE_APPLICATION_CREDENTIALS` to the default set in `.env.example`.
 
 #### Discord configuration
 
@@ -125,11 +140,13 @@ docker-compose up --build -d
 
 ### Keywords
 
-The list of keywords analysed can be found in `bot/keywords.json`. The dictionary is split into two sections.
+The list of keywords analysed can be found in `bot/keywords.json`. The dictionary is split into three sections.
 
 The first section `keywords` is for references that we are certain relate to cryptocurrency.
 
 The section `possible_keywords` is for references which _might_ relate to cryptocurrency.
+
+The section `possible_objects` is for references which the Google Vision API might return.
 
 ## Known Issues
 
