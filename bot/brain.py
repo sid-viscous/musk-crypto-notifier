@@ -244,14 +244,14 @@ class TweetHandler:
                 highlighted_text = self.highlight_keywords(highlighted_text, matched_possible_keywords, bold=False)
 
             # Log tweet text
-            tweet_logger.info(self.message_formatter("Matched", highlighted_text, tweet))
+            tweet_logger.info(self.message_formatter("@everyone Matched", highlighted_text, tweet))
 
         elif matched_possible_keywords:
             # Highlight the tweet text
             highlighted_text = self.highlight_keywords(text, matched_possible_keywords, bold=False)
 
             # Log tweet text
-            possible_tweet_logger.info(self.message_formatter("Possible", highlighted_text, tweet))
+            possible_tweet_logger.info(self.message_formatter("@everyone Possible", highlighted_text, tweet))
 
     def handle_objects(self, tweet, image_objects, matched_possible_image_objects):
         """ Checks if results exist for objects and prints them.
@@ -269,7 +269,7 @@ class TweetHandler:
             highlighted_objects = self.highlight_keywords(image_objects, matched_possible_image_objects, bold=False)
 
             # Log list of objects
-            possible_tweet_logger.info(self.message_formatter("Possible", f"Matched objects: {highlighted_objects}", tweet))
+            possible_tweet_logger.info(self.message_formatter("@everyone Possible", f"Matched objects: {highlighted_objects}", tweet))
 
     def process_tweet(self, tweet):
         """ Main handler for tweets.
@@ -293,18 +293,21 @@ class TweetHandler:
         self.handle_keywords(tweet, text, matched_keywords, matched_possible_keywords)
 
         # Check if tweet contains an image
-        for media in tweet.entities['media']:
-            if media['type'] == "photo":
-                logger.debug("Found image in tweet, sending to Google API for analysis")
-                image_url = media["media_url_https"]
-                logger.debug(image_url)
-                image_text = self.scan_image_text(image_url)
-                logger.info(f"Text in image: {image_text}")
-                image_objects = self.scan_image_objects(image_url)
-                logger.info(f"Objects in image: {image_objects}")
-                matched_image_keywords = self.scan_for_keywords(image_text)
-                matched_possible_image_keywords = self.scan_for_possible_keywords(image_text)
-                matched_possible_image_objects = self.scan_for_possible_image_objects(image_objects)
+        try:
+            for media in tweet.entities["media"]:
+                if media["type"] == "photo":
+                    logger.debug("Found image in tweet, sending to Google API for analysis")
+                    image_url = media["media_url_https"]
+                    logger.debug(image_url)
+                    image_text = self.scan_image_text(image_url)
+                    logger.info(f"Text in image: {image_text}")
+                    image_objects = self.scan_image_objects(image_url)
+                    logger.info(f"Objects in image: {image_objects}")
+                    matched_image_keywords = self.scan_for_keywords(image_text)
+                    matched_possible_image_keywords = self.scan_for_possible_keywords(image_text)
+                    matched_possible_image_objects = self.scan_for_possible_image_objects(image_objects)
 
-                self.handle_keywords(tweet, image_text, matched_image_keywords, matched_possible_image_keywords)
-                self.handle_objects(tweet, image_objects, matched_possible_image_objects)
+                    self.handle_keywords(tweet, image_text, matched_image_keywords, matched_possible_image_keywords)
+                    self.handle_objects(tweet, image_objects, matched_possible_image_objects)
+        except KeyError:
+            pass
