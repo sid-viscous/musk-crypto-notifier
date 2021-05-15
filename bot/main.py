@@ -46,29 +46,39 @@ class CryptoTweetListener(tweepy.StreamListener):
             logger.info(f"Tweet text: {tweet.text}")
             self.tweet_handler.process_tweet(tweet)
 
+    def on_exception(self, exception):
+        """ Handles exceptions encountered.
+
+        Args:
+            exception: Exception message.
+
+        """
+        logger.warning(f"An exception was found: {exception}")
+        logger.info(f"Restarting API stream")
+        main()
+
     def on_error(self, status):
         """ Handles errors received on the web socket.
 
         Args:
             status: Error status code.
 
-        Returns:
-            bool: True to keep the service running after error received.
-
         """
         if str(status) == "401":
             logger.warning("Incomplete read error at Twitter endpoint, will reconnect now.")
         if str(status) == "420":
-            logger.warning("Twitter API Rate Limit Exceeded, Sleep for 1 minute.")
+            logger.warning("Twitter API Rate Limit Exceeded, sleeping for 1 minute.")
             time.sleep(1 * 60)
         else:
             logger.error(status)
 
-        return True
+        logger.info("Restarting API stream")
+        main()
 
 
 def main():
     """ Main function for running the bot. """
+    logger.info("Starting Twitter feed listener")
     tweets_listener = CryptoTweetListener()
     stream = tweepy.Stream(tweets_listener.api.auth, tweets_listener)
     stream.filter(follow=config["following_ids"])
