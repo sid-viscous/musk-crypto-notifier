@@ -56,8 +56,10 @@ class CryptoTweetListener(tweepy.StreamListener):
             bool: True to keep the service running after error received.
 
         """
+        if str(status) == "401":
+            logger.warning("Incomplete read error at Twitter endpoint, will reconnect now.")
         if str(status) == "420":
-            logger.warning("Twitter AI Rate Limit Exceeded, Sleep for 1 minute")
+            logger.warning("Twitter API Rate Limit Exceeded, Sleep for 1 minute.")
             time.sleep(1 * 60)
         else:
             logger.error(status)

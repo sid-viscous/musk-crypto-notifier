@@ -11,7 +11,13 @@
     "litecoin",
     "ltc",
     "ripple",
-    "xrp"
+    "xrp",
+    "cardano",
+    "xlm",
+    "stellar lumens",
+    "solana",
+    "polkadot"
+
   ],
   "possible_keywords": [
     "to the moon",
@@ -22,7 +28,8 @@
     "hodling",
     "hoddling",
     "shiba inu",
-    "shiba"
+    "shiba",
+    "nano"
   ],
   "possible_objects": [
     "dog",
