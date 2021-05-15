@@ -66,11 +66,11 @@ class CryptoTweetListener(tweepy.StreamListener):
         """
         if str(status) == "401":
             logger.warning("Incomplete read error at Twitter endpoint, will reconnect now.")
-        if str(status) == "420":
+        elif str(status) == "420":
             logger.warning("Twitter API Rate Limit Exceeded, sleeping for 1 minute.")
             time.sleep(1 * 60)
-        else:
-            logger.error(status)
+        #else:
+        #    logger.error(status)
 
         logger.info("Restarting API stream")
         main()
