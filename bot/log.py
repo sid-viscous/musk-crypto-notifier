@@ -89,10 +89,13 @@ class Logger:
     def error(self, message):
         """ Error logger.
 
+        Bodged to exclude 401 errors.
+
         Args:
             message (str): String containing the message text.
         """
-        self._log(message, "error")
+        if str(message) != "401":
+            self._log(message, "error")
 
     def debug(self, message):
         """ Debug logger.
