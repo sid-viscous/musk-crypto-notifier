@@ -75,7 +75,10 @@ def twitter_api():
 # =====================================================================
 # GOOGLE VISION API
 # =====================================================================
-image_client = vision.ImageAnnotatorClient()
+if not config["offline_mode"]:
+    image_client = vision.ImageAnnotatorClient()
+else:
+    image_client = None
 
 # =====================================================================
 # LOGGING

@@ -74,13 +74,19 @@ class TweetHandler:
         Returns:
             list of str: List of keywords found in the text.
         """
+        # Remove handles from text
+        text_no_handles = ' '.join(word for word in text.split(' ') if not word.startswith('@'))
+        print("^^^")
+        print(text_no_handles)
+
+        # Scan for matches
         matches = []
         for keyword in keywords:
             if len(keyword) > 4:
                 max_l_dist = 1
             else:
                 max_l_dist = 0
-            test = find_near_matches(keyword, text, max_l_dist=max_l_dist)
+            test = find_near_matches(keyword, text_no_handles, max_l_dist=max_l_dist)
             if test:
                 matches.append(test[0])
         return self._remove_duplicates(matches)
